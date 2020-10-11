@@ -6,6 +6,7 @@
 	"youtube_key": "youtube stream key",
 	"mpd_hostname": "127.0.0.1",
 	"mpd_port": "6600",
+	"mpd_password": "leave blank if not used",
 	"audio_url": "url to audio stream",
 	"font_file": "path to custom font, leave as blank to use default",
 	"font_color": "white, or other ffmpeg color",

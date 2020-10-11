@@ -12,6 +12,9 @@ with open('config.json', 'r') as f:
 client = MPDClient()
 client.connect(config['mpd_hostname'], int(config['mpd_port']))
 
+if len(config['mpd_password']) > 0:
+	client.password(config['mpd_password'])
+
 def _parse_song_name():
 	song_data = client.currentsong()
 
