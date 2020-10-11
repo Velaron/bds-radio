@@ -19,7 +19,7 @@ def _parse_song_name():
 	song_data = client.currentsong()
 
 	if 'title' not in song_data or 'artist' not in song_data:
-		return os.path.splitext(song_data['file'])[0]
+		return os.path.splitext(os.path.basename(song_data['file']))[0]
 
 	title = song_data['title']
 	artist = song_data['artist']
