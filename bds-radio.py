@@ -12,17 +12,24 @@ with open('config.json', 'r') as f:
 client = MPDClient()
 client.connect(config['mpd_hostname'], int(config['mpd_port']))
 
-def _write_song_data():
+def _parse_song_name():
 	song_data = client.currentsong()
-	title = song_data.get('title', 'UNKNOWN')
-	artist = song_data.get('artist', 'UNKNOWN')
+
+	if 'title' not in song_data or 'artist' not in song_data:
+		return os.path.splitext(song_data['file'])[0]
+
+	title = song_data['title']
+	artist = song_data['artist']
 
 	if config['transliterate']:
 		title = translit(title, 'ru', reversed=True)
 		artist = translit(artist, 'ru', reversed=True)
+	
+	return '{}\n{}'.format(title, artist)
 
+def _write_song_data():
 	with open('song.txt.tmp', 'w') as f:
-		f.write('{}\n{}'.format(title, artist))
+		f.write(_parse_song_name())
 
 	os.replace('song.txt.tmp', 'song.txt')
 
