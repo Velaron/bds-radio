@@ -1,0 +1,13 @@
+{
+	"framerate": "30",
+	"background": "video/image path",
+	"transliterate": "true/false",
+	"youtube_url": "rtmp://a.rtmp.youtube.com/live2",
+	"youtube_key": "youtube stream key",
+	"mpd_hostname": "127.0.0.1",
+	"mpd_port": "6600",
+	"audio_url": "url to audio stream",
+	"font_file": "path to custom font, leave as blank to use default",
+	"font_color": "white, or other ffmpeg color",
+	"font_size": "32"
+}
