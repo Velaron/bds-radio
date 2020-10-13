@@ -2,6 +2,7 @@ import os
 import ffmpeg
 import json
 from mpd import MPDClient
+from select import select
 from transliterate import translit
 
 config = {}
@@ -54,13 +55,24 @@ if len(config['font_file']) > 0:
 	text_params.update({'fontfile': config['font_file']})
 
 _write_song_data()
-process = (
-	ffmpeg.concat(background, audio, v=1, a=1)
-	.drawtext(**text_params)
-	.output(youtube_url, audio_bitrate='320k', video_bitrate='2500k', acodec='aac', format='flv', framerate=int(config['framerate']))
-	.run_async()
-)
+client.send_idle()
+
+def _run_ffmpeg():
+	process = (
+		ffmpeg.concat(background, audio, v=1, a=1)
+		.drawtext(**text_params)
+		.output(youtube_url, audio_bitrate='320k', video_bitrate='2500k', acodec='aac', format='flv', framerate=int(config['framerate']))
+		.run_async()
+	)
+	return process
+	
+process = _run_ffmpeg()
 
 while True:
-	client.idle()
-	_write_song_data()
+	if select([client], [], [], 0)[0]:
+		client.fetch_idle()
+		_write_song_data()
+		client.send_idle()
+
+	if process.poll():
+		process = _run_ffmpeg()
