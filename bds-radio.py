@@ -1,19 +1,24 @@
-import os
 import ffmpeg
 import json
+import os
+import threading
 from mpd import MPDClient
 from select import select
 from transliterate import translit
 
-config = {}
+def _load_config():
+	with open('config.json', 'r') as f:
+		return json.load(f)
 
-with open('config.json', 'r') as f:
-	config = json.load(f)
+config = _load_config()
+
+youtube_url='{}/{}'.format(config['youtube_url'], config['youtube_key'])
+audio = ffmpeg.input(config['audio_url'])
+background = ffmpeg.input(**config['background_params'])
 
 client = MPDClient()
-client.connect(config['mpd_hostname'], int(config['mpd_port']))
-
-if len(config['mpd_password']) > 0:
+client.connect(config['mpd_hostname'], config['mpd_port'])
+if config['mpd_password']:
 	client.password(config['mpd_password'])
 
 def _parse_song_name():
@@ -37,42 +42,23 @@ def _write_song_data():
 
 	os.replace('song.txt.tmp', 'song.txt')
 
-youtube_url='{}/{}'.format(config['youtube_url'], config['youtube_key'])
-
-audio = ffmpeg.input(config['audio_url'])
-background = ffmpeg.input(config['background'], loop=True, framerate=int(config['framerate']))
-
-text_params = {
-	'fontsize': config['font_size'],
-	'x': 16,
-	'y': 16,
-	'reload': True,
-	'textfile': 'song.txt',
-	'fontcolor': config['font_color']
-}
-
-if len(config['font_file']) > 0:
-	text_params.update({'fontfile': config['font_file']})
-
-_write_song_data()
-client.send_idle()
-
 def _run_ffmpeg():
-	process = (
-		ffmpeg.concat(background, audio, v=1, a=1)
-		.drawtext(**text_params)
-		.output(youtube_url, audio_bitrate='320k', video_bitrate='2500k', acodec='aac', format='flv', framerate=int(config['framerate']))
+	return (
+		ffmpeg.concat(background.video, audio, v=1, a=1)
+		.drawtext(textfile='song.txt', reload=True, **config['text_params'])
+		.output(youtube_url, **config['output_params'])
 		.run_async()
 	)
-	return process
-	
-process = _run_ffmpeg()
 
-while True:
-	if select([client], [], [], 0)[0]:
-		client.fetch_idle()
+def _check_mpd():
+	while True:
 		_write_song_data()
-		client.send_idle()
+		client.idle()
 
-	if process.poll():
+def _check_ffmpeg():
+	while True:
 		process = _run_ffmpeg()
+		process.wait()
+
+threading.Thread(target=_check_mpd).start()
+threading.Thread(target=_check_ffmpeg).start()

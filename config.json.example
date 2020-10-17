@@ -1,14 +1,27 @@
 {
-	"framerate": "30",
-	"background": "video/image path",
 	"transliterate": "true/false",
 	"youtube_url": "rtmp://a.rtmp.youtube.com/live2",
 	"youtube_key": "youtube stream key",
 	"mpd_hostname": "127.0.0.1",
 	"mpd_port": "6600",
-	"mpd_password": "leave blank if not used",
+	"mpd_password": null,
 	"audio_url": "url to audio stream",
-	"font_file": "path to custom font, leave as blank to use default",
-	"font_color": "white, or other ffmpeg color",
-	"font_size": "32"
+	"background_params": {
+		"filename": "background.jpg",
+		"loop": "true",
+		"framerate": "15"
+	},
+	"text_params": {
+		"fontcolor": "white",
+		"fontsize": "32",
+		"x": "16",
+		"y": "16"
+	},
+	"output_params": {
+		"audio_bitrate": "320k",
+		"video_bitrate": "2500k",
+		"acodec": "aac",
+		"format": "flv",
+		"framerate": "15"
+	}
 }
